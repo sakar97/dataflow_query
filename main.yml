@@ -1,0 +1,8 @@
+---
+ - hosts: localhost
+   vars_files:
+     - vars.yml
+   tasks:
+     - name: including role dataflow
+       include_role:
+         name: dataflow

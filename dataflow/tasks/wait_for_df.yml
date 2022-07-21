@@ -1,0 +1,7 @@
+---
+- name: block to traverse dataflow query
+  block:
+    - name: wait for 30 seconds
+      wait_for:
+        timeout: 30
+

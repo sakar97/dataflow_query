@@ -1,0 +1,75 @@
+---
+# tasks file for dataflow
+ - name: Debugg
+   debug:
+     msg: "Run dataflow deploy"
+
+ - name: creating virtual env folder
+   file:
+     name: "{{ virtualenv_path }}"
+     state: directory
+     recurse: yes
+ - name: install virtual env module
+   pip:
+     name: virtualenv
+     state: latest
+
+ - name: creating a virtualenv
+   pip:
+     name: bottle
+     virtualenv: "{{ virtualenv_path }}/env"
+     state: latest
+
+ - name: activating virtual env
+   shell:
+     cmd: |
+       source "{{ virtualenv_path }}"/env/bin/activate
+       trap 'deactivate' exit
+       yes | apt install apache2 -y
+
+ - name: export
+   lineinfile:
+     path: "/etc/environment"
+     state: present
+     regexp: "^{{ item.key }}="
+     line: "{{ item.key }}={{ item.value}}"
+   with_items: "{{ os_environment }}"
+
+ - name: fetch gcloud value into account register
+   shell: |
+      gcloud auth list --filter=status:ACTIVE --format="value(account)"
+   register: ACCOUNT
+   tags:
+     - never
+
+
+ - block:
+     - name: wait for 30 seconds
+       wait_for:
+          timeout: 10
+
+     - name: gcloud command
+       shell: |
+        #  gcloud dataflow jobs list --filter="(state=RUNNING OR state=DRAINING OR state=Cancelling) AND name={{ Name }}" --region "{{ Region }}" --format='json' 2> /dev/null || true
+       register: DATAFLOW_SHOW_QUERY
+
+     - name: debug
+       debug:
+         msg: "json:" {{ DATAFLOW_SHOW_QUERY.stdout }}
+
+     - name: including wait for df playbook
+       include_tasks: wait_for_df.yml
+       vars:
+          DATAFLOW_SHOW_QUERY: "{{ DATAFLOW_SHOW_QUERY }}"
+
+     - name: debug
+       debug:
+         msg: "Finished waiting:" {{ DATAFLOW_SHOW_QUERY.stdout }}
+
+     - name: wait for 30 seconds
+       wait_for:
+          timeout: 30
+   rescue:
+    - name: error message
+      debug:
+         msg: "Failinggg"

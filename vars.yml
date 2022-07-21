@@ -1,0 +1,15 @@
+virtualenv_path: "/tmp/venv"
+ENVIRONMENT: "bamboo_ENV"
+ENVIRONMENT_GCP_PROJECT: "bamboo_ENVIRONMENT_GCP_PROJECT"
+ARTIFACT: "bamboo_ARTIFACT"
+os_environment:
+      - key: DP_ENV
+        value: "{{ ENVIRONMENT }}"
+DEPLOY_YAML: ""
+WAIT_FOR_JOB_COMPLETION: "false"
+Name: "search-transformation"
+Region: "us-central1"
+Deployment: "cancel"
+Properties: ""
+gcs-location: "gs://bucket/obj"
+disable-public-ips: ""
